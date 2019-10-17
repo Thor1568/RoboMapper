@@ -1,0 +1,4 @@
+Schema explanation
+
+Basically playground for testing things related to the project.
+Ideas are born and die here
