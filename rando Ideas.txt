@@ -1,0 +1,18 @@
+currently, messages are 1 second in length and contain content every other tick.
+Max message length is 5, but this will be changed. 
+
+
+Arduino needs to read dists from ult sensors and relay that to the PI. First messsage will contain which sensor is blocked,
+then every message after until an empty message will sum to be the distance to that sensor in CM. 
+PI can read the water sensor. Arduino can read the accelerometer to make sure its turns are accurate. Needs to recieve
+movement instructions from the PI. First message will tell it to move in what direction(front, back, left, right), then
+how long until an empty message
+
+
+Relaying temperature will be the same process but temp can be disabled and rerun every hour or something.
+Using power for temp and water is a waste. I need a way to toggle them.
+
+Battery charging is still an issue lmao. All i got is a barrel jack solar panel and a normal one.
+
+OK scratch the message thing, make the message save in an array and the array is a binary number. turn the binary number to
+int and then I can send WAYYY more data xd
