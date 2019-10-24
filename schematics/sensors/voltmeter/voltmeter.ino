@@ -3,7 +3,7 @@ const int v2Pin = A1;
 int tempVolts;
 
 //https://www.allaboutcircuits.com/projects/make-a-digital-voltmeter-using-the-arduino/
-//bruh
+//bruh this isn't working 
 
 void setup() {
   // put your setup code here, to run once:
