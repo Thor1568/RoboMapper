@@ -4,9 +4,14 @@ Unlimited mode and Limited mode.
 Unlimited is outdoors where there are not obstacles everywhere and the
 robot will patrol a clearly defined area.
 Limited is indoors where there are obstacles and it will patrol until it
-is disabled? Maybe merge them but here are framework classes for how it will work
+is disabled? Maybe merge them but here are framework classes for how it
+will work
 
 """
+
+import pygame
+WHITE = (255,255,255)
+BLACK = (0,0,0)
 
 class Robot():
     """
@@ -100,8 +105,15 @@ class LimMap():
 
 
 class MapObject(pygame.sprite.Sprite):
-    def __init__(self, x, y, otype):
+    def __init__(self, size, x, y, otype):
+        """Class for any object that is shown on the map so robot, wall,
+        or otherwise"""
         pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.Surface(size)
+        if otype == 0:
+            pygame.draw.rect(self.image, (255,0,0), (0, 0, size[0], size[1]))
+        else:
+            self.image.fill((255,255,255))
         self.rect = self.image.get_rect()
         self.place = (x, y)
         self.rect.x = x
@@ -116,32 +128,50 @@ class MapObject(pygame.sprite.Sprite):
 
 
 class VisualMap(pygame.Surface):
-    def __init__(self, width, height):
+    def __init__(self, width, height, scale, map):
         pygame.Surface.__init__(self, size=(width, height))
+
+        #how to do size?
+        #vizmap is constant size: 800-50 x 600-50 (25 on each size for cool stuff).
+        #maps are abritrary size.
+
+
         self.pos = (width, height)
+        self.fill((0, 255, 0))
+        self.scale= scale
+        self.worldMap = map
+        edge = 5
         self.RECT = (0, 0, width, height)
-        self.INRECT = (edge,edge, width-(edge), height-(edge))
+        self.INRECT = (edge,edge, width-(edge*2), height-(edge*2))
         pygame.draw.rect(self, WHITE, self.RECT)
         pygame.draw.rect(self, BLACK, self.INRECT)
         self.objects = pygame.sprite.Group()
 
-    def genBarriers(self, map):
-        pass
+    def genBarriers(self):
+        rawmap = self.worldMap.map
+        for y in range(len(rawmap)):
+            for x in range(len(rawmap[y])):
+                if rawmap[y][x] == 1:
+                    #create add
+                    oof = MapObject((self.scale, self.scale), x, y, 0)
+                    self.objects.add(oof)
+                else:
+                    print(rawmap[y][x])
         #reads barrier count and then adds them as sprites in objects
 
-    def createRobot(self, scale, map):
-        self.worldMap = map
-        self.robot = Robot(scale, map)
+    def createRobot(self, x, y):
+        self.robot = MapObject(x, y, "r")
 
     def render(self, display):
         "Draws surface on the display"
-        display.blit(self, (0, self.pos[1]))
+        self.objects.draw(self)
+        display.blit(self, (0, 0))
 
 def main():
     import os
-    amap = UnlimMap(5, 2, 20)
-    amap.addBarrier(0, 0)
-    amap.addBarrier(4, 1)
+    #amap = UnlimMap(5, 2, 20)
+    #amap.addBarrier(0, 0)
+    #amap.addBarrier(4, 1)
     #pls fix this, it saves elsewhere thanks Python very cool
     #amap.saveMap("testerMap.txt")
 
@@ -151,6 +181,42 @@ def main():
     scale = 50
     bot = Robot(scale)
     botMap = UnlimMap(10, 10, scale)
+    botMap.addBarrier(1, 1)
+    botMap.addBarrier(1, 0)
+    botMap.addBarrier(2, 0)
+    botMap.addBarrier(5, 5)
+    botMap.addBarrier(7, 8)
+    botMap.saveMap("botmap.txt")
+
+
+    #pygame crap for vis
+    wid = 800
+    height = 600
+    gDisp = pygame.display.set_mode((wid,height))
+    pygame.display.set_caption('test')
+    gclock = pygame.time.Clock()
+
+
+    temp = VisualMap(wid, height, scale, botMap)
+    temp.genBarriers()
+
+    run = True
+    while (run):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    run = False
+
+        gDisp.fill(BLACK)
+        temp.render(gDisp)
+        pygame.display.flip()
+        gclock.tick(60)
+
+
+    pygame.quit()
+    exit()
 
 
 if __name__ == '__main__':
