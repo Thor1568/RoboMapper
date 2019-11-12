@@ -135,12 +135,10 @@ class VisualMap(pygame.Surface):
         #vizmap is constant size: 800-50 x 600-50 (25 on each size for cool stuff).
         #maps are abritrary size.
 
-
-        self.pos = (width, height)
         self.fill((0, 255, 0))
         self.scale= scale
         self.worldMap = map
-        edge = 5
+        edge = len(map.map)
         self.RECT = (0, 0, width, height)
         self.INRECT = (edge,edge, width-(edge*2), height-(edge*2))
         pygame.draw.rect(self, WHITE, self.RECT)
@@ -190,8 +188,8 @@ def main():
 
 
     #pygame crap for vis
-    wid = 800
-    height = 600
+    wid = 1000
+    height = 700
     gDisp = pygame.display.set_mode((wid,height))
     pygame.display.set_caption('test')
     gclock = pygame.time.Clock()

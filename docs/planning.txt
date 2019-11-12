@@ -1,9 +1,9 @@
 Arduino Robot Mapper
 
 Subprojects:
-Mapping system
-Navigation system
-Radio communication
+Mapping system (IN PROGRESS)
+Navigation system (IN PROGRESS)
+Radio communication (NEED PARTS)
 PI to Arduino comms (IN PROGRESS)
 
 Navigation steps:
