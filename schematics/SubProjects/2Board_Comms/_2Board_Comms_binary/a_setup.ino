@@ -4,6 +4,8 @@ void setup() {
   Serial.println("Ready to start!");
   pinMode(msgPin, OUTPUT);
   digitalWrite(msgPin, LOW);
-
+  while (true) {
+    Serial.println(  
+  }
   
 }

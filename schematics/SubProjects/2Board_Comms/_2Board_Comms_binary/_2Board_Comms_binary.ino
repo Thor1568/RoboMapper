@@ -25,6 +25,7 @@ const int RIGHTOBJECT = 5;
 const int LEFTOBJECT = 6;
 const int BACKOBJECT = 7;
 const int FRONTOBJECT = 8;
+int maxMsgLen = (int) pow(2, PERIOD/MSGBREAK);
 int OBJ_DIST;
 int TEMP;
 int HUMID;
@@ -57,11 +58,9 @@ int readOver(int t, int t_break, int apin) {
     message[tick] = val;
     //Serial.println(val);
     if (val == 1) {
-      count  
+      Serial.println(message[tick]);  
     }
    
-    Serial.print("Count: ");
-    Serial.print(count);
     Serial.print(" tick: ");
     Serial.print(tick);
     Serial.print(" val: ");
@@ -77,6 +76,8 @@ int readOver(int t, int t_break, int apin) {
 void sendOver(int t, int t_break, int apin, int msg) {
   pinMode(apin, OUTPUT);
   //send start message
+  //turn msg to binary
+  
   delayMicroseconds(10);
   for (int tick =0; tick<STRT_MSG; tick++) {
     digitalWrite(apin, HIGH);

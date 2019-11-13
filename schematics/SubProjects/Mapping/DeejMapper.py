@@ -12,6 +12,10 @@ will work
 import pygame
 WHITE = (255,255,255)
 BLACK = (0,0,0)
+RED = (255,0,0)
+GREEN = (0,255,0)
+BLUE = (0,0,255)
+GRAY = (60, 60, 60)
 
 class Robot():
     """
@@ -111,7 +115,8 @@ class MapObject(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface(size)
         if otype == 0:
-            pygame.draw.rect(self.image, (255,0,0), (0, 0, size[0], size[1]))
+            self.image.fill(RED)
+            pygame.draw.rect(self.image, BLACK, (5, 5, size[0]-5*2, size[1]-5*2))
         else:
             self.image.fill((255,255,255))
         self.rect = self.image.get_rect()
@@ -138,11 +143,13 @@ class VisualMap(pygame.Surface):
         self.fill((0, 255, 0))
         self.scale= scale
         self.worldMap = map
-        edge = len(map.map)
+        edge = scale/2
+        self.edge = edge
+        #reverse these deej
         self.RECT = (0, 0, width, height)
         self.INRECT = (edge,edge, width-(edge*2), height-(edge*2))
         pygame.draw.rect(self, WHITE, self.RECT)
-        pygame.draw.rect(self, BLACK, self.INRECT)
+        pygame.draw.rect(self, GRAY, self.INRECT)
         self.objects = pygame.sprite.Group()
 
     def genBarriers(self):
@@ -151,10 +158,11 @@ class VisualMap(pygame.Surface):
             for x in range(len(rawmap[y])):
                 if rawmap[y][x] == 1:
                     #create add
-                    oof = MapObject((self.scale, self.scale), x, y, 0)
+                    oof = MapObject((self.scale, self.scale), x*self.scale+self.edge, y*self.scale+self.edge, 0)
                     self.objects.add(oof)
                 else:
-                    print(rawmap[y][x])
+                    pass
+        #Draw lines at map bounds. rawmap[-1][-1] is max. Or rawmap.length since all maps are square
         #reads barrier count and then adds them as sprites in objects
 
     def createRobot(self, x, y):
@@ -175,7 +183,7 @@ def main():
 
     #Example
 
-    #scale in centimeters?
+    #scale in centimeters? relate to map size in some way?
     scale = 50
     bot = Robot(scale)
     botMap = UnlimMap(10, 10, scale)
@@ -184,14 +192,18 @@ def main():
     botMap.addBarrier(2, 0)
     botMap.addBarrier(5, 5)
     botMap.addBarrier(7, 8)
+    botMap.addBarrier(8, 8)
+    botMap.addBarrier(9, 9)
+    botMap.addBarrier(7, 9)
+    botMap.addBarrier(1, 5)
     botMap.saveMap("botmap.txt")
 
 
     #pygame crap for vis
-    wid = 1000
-    height = 700
-    gDisp = pygame.display.set_mode((wid,height))
-    pygame.display.set_caption('test')
+    wid = 800
+    height = 600
+    gDisp = pygame.display.set_mode((wid,height), pygame.FULLSCREEN, 16)
+    pygame.display.set_caption('mapper test')
     gclock = pygame.time.Clock()
 
 
