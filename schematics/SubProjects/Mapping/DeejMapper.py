@@ -53,9 +53,9 @@ class Robot():
         self.dist = 0
 
 
-class UnlimMap():
+class LimMap():
     """
-    Creates a unlimited map where the dimensions are clearly
+    Creates a limited map where the dimensions are clearly
     defined and the scale is the area of the "squares" that
     the map is made up of.(subject to change) Ideally scale
     is the size of the robot. """
@@ -85,7 +85,8 @@ class UnlimMap():
         for y in range(len(self.map)):
             f.writelines(str(self.map[y])+"\n")
 
-class LimMap():
+
+class UnlimMap():
     def __init__(self, scale, max_size):
         self.max = max_size
         self.scale = scale
@@ -166,7 +167,8 @@ class VisualMap(pygame.Surface):
         #reads barrier count and then adds them as sprites in objects
 
     def createRobot(self, x, y):
-        self.robot = MapObject(x, y, "r")
+        self.robot = MapObject((self.scale-self.edge*2, self.scale-self.edge*2), x*self.scale+self.edge, y*self.scale+self.edge, "r")
+        self.objects.add(self.robot)
 
     def render(self, display):
         "Draws surface on the display"
@@ -186,7 +188,7 @@ def main():
     #scale in centimeters? relate to map size in some way?
     scale = 50
     bot = Robot(scale)
-    botMap = UnlimMap(10, 10, scale)
+    botMap = LimMap(10, 10, scale)
     botMap.addBarrier(1, 1)
     botMap.addBarrier(1, 0)
     botMap.addBarrier(2, 0)
@@ -209,6 +211,7 @@ def main():
 
     temp = VisualMap(wid, height, scale, botMap)
     temp.genBarriers()
+    temp.createRobot(0,0)
 
     run = True
     while (run):
@@ -219,6 +222,11 @@ def main():
                 if event.key == pygame.K_ESCAPE:
                     run = False
 
+        #Reset robot position and tiles seen by robot
+        botMap.updateRobot(bot)
+        #Update the visual map
+        temp.update()
+        #blah blah
         gDisp.fill(BLACK)
         temp.render(gDisp)
         pygame.display.flip()
