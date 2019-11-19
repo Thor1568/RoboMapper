@@ -24,6 +24,7 @@ class Robot():
     """
     def __init__(self, scale):
         self.x = 0; self.y = 0;
+        self.lastX = 0; self.lastY = 0;
         self.deltaX = 0
         self.dist = 0
 
@@ -84,6 +85,11 @@ class LimMap():
         f = open(file, "w")
         for y in range(len(self.map)):
             f.writelines(str(self.map[y])+"\n")
+
+    def updateRobot(self, robot):
+        #fill in map with a spot where the robot is
+        self.map[robot.lastY][robot.lastX] = 0
+        self.map[robot.y][robot.x] = 2
 
 
 class UnlimMap():
@@ -175,6 +181,10 @@ class VisualMap(pygame.Surface):
         self.objects.draw(self)
         display.blit(self, (0, 0))
 
+    def update(self):
+        #do stuff?
+        pass
+
 def main():
     import os
     #amap = UnlimMap(5, 2, 20)
@@ -233,6 +243,8 @@ def main():
         gclock.tick(60)
 
 
+    print(bot)
+    print(bot.x, bot.y)
     pygame.quit()
     exit()
 
