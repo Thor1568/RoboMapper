@@ -2,7 +2,7 @@
 
 //Messages work like this: digital flashes during PERIOD to convey messaage. Summing flash amounts over PERIOD and decoding gives the message sent.
 //No messages over a period indicates communication is halted. Could be due to an error or loss of power/connection. Since both sides transmit and recieve, system is half duplex.
-//After sending, transmitter waits PERIOD. When communication starts: init msg is recieved, reciver then sends init msg back and then sending data. loop: starts recieving for PERIOD, then waits PERIOD to 
+//After sending, transmitter waits PERIOD. When communication starts: init msg is recieved, reciver then sends init msg back and then sending data. loop: starts recieving for PERIOD, then waits PERIOD to
 //possibly send anything back.
 
 //Ok ignore the above. This saves either 0 or 1 and then turns it to binary.
@@ -30,7 +30,7 @@ int OBJ_DIST;
 int TEMP;
 int HUMID;
 
-//message value formula is 
+//message value formula is
 
 int code;
 int temp;
@@ -41,7 +41,7 @@ int readOver(int t, int t_break, int apin) {
   //reads signals over t with t breaks in between signals and turns to binary
   pinMode(apin, INPUT);
   int count = 0;
-  int[] message = {};
+  int[] message = {0,0,0,0,0,0,0,0,0};
   int val = 0;
   int lastval;
   boolean isMsg = false;
@@ -53,14 +53,14 @@ int readOver(int t, int t_break, int apin) {
     }
   }
   //runs for every 2nd t break in t.
-  for (int tick =0; tick<t; tick += t_break/2) {
+  for (int tick =t_break; tick<t; tick += t_break/2) {
     val = digitalRead(apin);
     message[tick] = val;
     //Serial.println(val);
     if (val == 1) {
-      Serial.println(message[tick]);  
+      Serial.println(message[tick]);
     }
-   
+
     Serial.print(" tick: ");
     Serial.print(tick);
     Serial.print(" val: ");
@@ -69,36 +69,61 @@ int readOver(int t, int t_break, int apin) {
 
     delay(t_break/2);
   }
-  Serial.println(message);
-  return (count - (STRT_MSG+STOP_MSG));
+  Serial.println(calculateBin(message));
+  return calculateBin(message);
+}
+
+int calculateBin(int msg[]) {
+    int sum = 0;
+    for (int i =0; i<msg.length(); i++) {
+        if(msg[i] == 1) {
+            sum += pow(2, i)
+        }
+    }
+    return sum;
+}
+
+//return pointer to an array of binary
+int* makeBin(int number) {
+    int binArr[] = {0,0,0,0,0,0,0,0,0};
+    for(int i =0; i<=10; i++) {
+        if (number % 2 == 0) {
+            number /= 2;
+            binArr[i] = 0;
+        } else {
+            binArr[i] = 1;
+            number = number/2;
+        }
+    }
+    return *binArr;
 }
 
 void sendOver(int t, int t_break, int apin, int msg) {
   pinMode(apin, OUTPUT);
   //send start message
   //turn msg to binary
-  
+
   delayMicroseconds(10);
   for (int tick =0; tick<STRT_MSG; tick++) {
     digitalWrite(apin, HIGH);
     delay(t_break/4);
     digitalWrite(apin, LOW);
     delay(t_break/4);
-  } 
+  }
   //send message parameter
   for (int tick =0; tick<msg; tick++) {
     digitalWrite(apin, HIGH);
     //delays t break / 2 because we need a wave to count so from 0, 1, 0 is one. 0, 1, 0, 1, 0 is two.
     delay(t_break/4);
     digitalWrite(apin, LOW);
-    delay(t_break/4); 
+    delay(t_break/4);
   }
   //send stop message
   for (int tick =0; tick<STOP_MSG; tick++) {
     digitalWrite(apin, HIGH);
     delay(t_break/4);
     digitalWrite(apin, LOW);
-    delay(t_break/4);  
+    delay(t_break/4);
   }
   int msgLen = STOP_MSG+STRT_MSG+msg;
   int timeToWait = t-(msgLen*(t_break/2));
