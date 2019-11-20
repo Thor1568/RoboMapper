@@ -1,8 +1,7 @@
 //transisitor stuff
 
-const int TsPin = 13;
-int motorPower = 200;
-const int TsReadPin = 12;
+const int TsPin = 12;
+const int TsReadPin = 13;
 
 void setup() {
   // put your setup code here, to run once:
