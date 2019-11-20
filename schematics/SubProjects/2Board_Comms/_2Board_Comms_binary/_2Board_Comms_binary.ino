@@ -98,7 +98,7 @@ int* makeBin(int number) {
     return *binArr;
 }
 
-void sendOver(int t, int t_break, int apin, int msg) {
+void sendOver(int t, int t_break, int apin, int msgArr[]) {
   pinMode(apin, OUTPUT);
   //send start message
   //turn msg to binary
@@ -110,20 +110,17 @@ void sendOver(int t, int t_break, int apin, int msg) {
     digitalWrite(apin, LOW);
     delay(t_break/4);
   }
-  //send message parameter
-  for (int tick =0; tick<msg; tick++) {
-    digitalWrite(apin, HIGH);
-    //delays t break / 2 because we need a wave to count so from 0, 1, 0 is one. 0, 1, 0, 1, 0 is two.
-    delay(t_break/4);
-    digitalWrite(apin, LOW);
-    delay(t_break/4);
-  }
-  //send stop message
-  for (int tick =0; tick<STOP_MSG; tick++) {
-    digitalWrite(apin, HIGH);
-    delay(t_break/4);
-    digitalWrite(apin, LOW);
-    delay(t_break/4);
+  //break message and sned it
+  for (int i =0; i<msgArr.length(); i++) {
+      if (msgArr[i] == 1) {
+          digitalWrite(apin, HIGH);
+          delay(t_break/4);
+          digitalWrite(apin, LOW);
+          delay(t_break/4);
+      } else {
+          digitalWrite(apin, LOW);
+          delay(t_break/2);
+      }
   }
   int msgLen = STOP_MSG+STRT_MSG+msg;
   int timeToWait = t-(msgLen*(t_break/2));
