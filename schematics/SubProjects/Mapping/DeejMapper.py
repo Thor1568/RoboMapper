@@ -9,43 +9,81 @@ will work
 
 """
 
+
+""" Mapper testing:
+Create random map with robot in random position. Pathfinding? I pick an unexplored point and move towards the point."""
+
 import pygame
+from random import randint
 WHITE = (255,255,255)
 BLACK = (0,0,0)
 RED = (255,0,0)
 GREEN = (0,255,0)
 BLUE = (0,0,255)
 GRAY = (60, 60, 60)
+LTGRAY = (120,120,120)
 
 class Robot():
     """
     'Robot' that acts as a virtual placeholder for the actual thing.
-    could be visualized some day or something
+    Returns a changed map after reading the map and checking if it can move
     """
     def __init__(self, scale):
         self.x = 0; self.y = 0;
+        self.scaleX = 0; self.scaleY = 0;
         self.lastX = 0; self.lastY = 0;
         self.deltaX = 0
         self.dist = 0
+        self.scale = scale
 
     def moveRaw(self, dx, dy):
         #move deltaX and deltaY or change in x and y
-        self.x += dx*scale
-        self.y += dy*scale
-        self.deltaX += dx*scale+dy*scale
-        self.dist += abs(dx*scale)+abs(dy*scale)
+        self.lastX = self.x; self.lastY = self.y;
+        #change map position x and y
+        self.x += dx
+        self.y += dy
+        #change scaled x and y
+        self.scaleX += dx*self.scale
+        self.scaleY += dy*self.scale
+        #delta x is displacement in taxicab geometry
+        self.deltaX += dx*self.scale+dy*self.scale
+        #dist is total movement in taxicab geometry
+        self.dist += abs(dx*self.scale)+abs(dy*self.scale)
 
     def move(self, dx, dy, map):
         #moves with check
-        check = canMove(dx, dy, map)
+        check = self.canMove(dx, dy, map)
+        print(check)
         if check:
-            moveRaw(dx, dy)
+            self.moveRaw(dx, dy)
+
+        #return the edited map with the robot moved on it
+        newPos = (self.x, self.y)
+        #2 is explored so replace last position with 2
+        print("Before", map)
+        map[self.lastY][self.lastX] = 2
+        #current position set to 3
+        map[newPos[1]][newPos[0]] = 3
+        #returns changed map.
+        print(newPos)
+        print("after", map)
+        return map
 
     def canMove(self, dx, dy, map):
         future = (self.x+dx, self.y+dy)
-        newTile = map[future[1]][future[0]]
-        if newTile == (0 or 2):
-            return True
+        xSize = len(map[0])
+        ySize = len(map)
+        if (future[0] < xSize) and (future[0] >= 0):
+            if (future[1] < ySize) and (future[1] >= 0):
+                newTile = map[future[1]][future[0]]
+                if (newTile == 0) or (newTile == 2):
+                    return True
+                else:
+                    return False
+            else:
+                return False
+        else:
+            return False
 
 
     def _reset(self):
@@ -59,7 +97,7 @@ class LimMap():
     Creates a limited map where the dimensions are clearly
     defined and the scale is the area of the "squares" that
     the map is made up of.(subject to change) Ideally scale
-    is the size of the robot. """
+    is the size of the robot. Object for the map? May delete for beign unnecessary"""
     def __init__(self, x_dim, y_dim, scale):
         self.size = (x_dim, y_dim)
         self.x_dim = x_dim; self.y_dim = y_dim;
@@ -86,10 +124,9 @@ class LimMap():
         for y in range(len(self.map)):
             f.writelines(str(self.map[y])+"\n")
 
-    def updateRobot(self, robot):
+    def updateMap(self, map):
         #fill in map with a spot where the robot is
-        self.map[robot.lastY][robot.lastX] = 0
-        self.map[robot.y][robot.x] = 2
+        self.map = map
 
 
 class UnlimMap():
@@ -124,8 +161,11 @@ class MapObject(pygame.sprite.Sprite):
         if otype == 0:
             self.image.fill(RED)
             pygame.draw.rect(self.image, BLACK, (5, 5, size[0]-5*2, size[1]-5*2))
+        elif otype == "e":
+            self.image.fill(LTGRAY)
         else:
-            self.image.fill((255,255,255))
+            self.image.fill(BLUE)
+
         self.rect = self.image.get_rect()
         self.place = (x, y)
         self.rect.x = x
@@ -152,9 +192,11 @@ class VisualMap(pygame.Surface):
         self.worldMap = map
         edge = scale/2
         self.edge = edge
+        self.width = width
+        self.height = height
         #reverse these deej
-        self.RECT = (0, 0, width, height)
-        self.INRECT = (edge,edge, width-(edge*2), height-(edge*2))
+        self.RECT = (0, 0, self.width, self.height)
+        self.INRECT = (self.edge,self.edge, self.width-(self.edge*2), self.height-(self.edge*2))
         pygame.draw.rect(self, WHITE, self.RECT)
         pygame.draw.rect(self, GRAY, self.INRECT)
         self.objects = pygame.sprite.Group()
@@ -167,6 +209,13 @@ class VisualMap(pygame.Surface):
                     #create add
                     oof = MapObject((self.scale, self.scale), x*self.scale+self.edge, y*self.scale+self.edge, 0)
                     self.objects.add(oof)
+                elif rawmap[y][x] == 2:
+                    oof = MapObject((self.scale, self.scale), x*self.scale+self.edge, y*self.scale+self.edge, "e")
+                    self.objects.add(oof)
+                elif rawmap[y][x] == 3:
+                    self.robot = MapObject((self.scale, self.scale), x*self.scale+self.edge, y*self.scale+self.edge, "r")
+                    self.objects.add(self.robot)
+
                 else:
                     pass
         #Draw lines at map bounds. rawmap[-1][-1] is max. Or rawmap.length since all maps are square
@@ -178,12 +227,19 @@ class VisualMap(pygame.Surface):
 
     def render(self, display):
         "Draws surface on the display"
+        self.fill(BLACK)
+        self.RECT = (0, 0, self.width, self.height)
+        self.INRECT = (self.edge,self.edge, self.width-(self.edge*2), self.height-(self.edge*2))
+        pygame.draw.rect(self, WHITE, self.RECT)
+        pygame.draw.rect(self, GRAY, self.INRECT)
         self.objects.draw(self)
         display.blit(self, (0, 0))
 
-    def update(self):
-        #do stuff?
-        pass
+    def update(self, newMap):
+        #regenerate all objects?
+        self.objects = pygame.sprite.Group()
+        self.worldMap = newMap
+        self.genBarriers()
 
 def main():
     import os
@@ -197,8 +253,18 @@ def main():
 
     #scale in centimeters? relate to map size in some way?
     scale = 50
-    bot = Robot(scale)
-    botMap = LimMap(10, 10, scale)
+    myRobot = Robot(scale)
+    maxWidth = 10
+    maxHeight = 10
+    barrierAmt = 20
+    botMap = LimMap(maxWidth, maxHeight, scale)
+    randMap = True
+    if randMap:
+        for x in range(barrierAmt):
+            ytemp = randint(0, maxHeight-1)
+            xtemp = randint(0, maxWidth-1)
+            botMap.addBarrier(xtemp, ytemp)
+    """
     botMap.addBarrier(1, 1)
     botMap.addBarrier(1, 0)
     botMap.addBarrier(2, 0)
@@ -208,22 +274,30 @@ def main():
     botMap.addBarrier(9, 9)
     botMap.addBarrier(7, 9)
     botMap.addBarrier(1, 5)
-    botMap.saveMap("botmap.txt")
+    """
+    #botMap.saveMap("botmap.txt")
 
 
     #pygame crap for vis
     wid = 800
     height = 600
-    gDisp = pygame.display.set_mode((wid,height), pygame.FULLSCREEN, 16)
+    gDisp = pygame.display.set_mode((wid,height), 0, 16)
     pygame.display.set_caption('mapper test')
     gclock = pygame.time.Clock()
 
 
     temp = VisualMap(wid, height, scale, botMap)
+    temp.worldMap.map[0][0] = 3
     temp.genBarriers()
     temp.createRobot(0,0)
 
     run = True
+    #key presses for debugging
+    wkey = False
+    skey = False
+    dkey = False
+    akey = False
+    newmap = []
     while (run):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -231,22 +305,49 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     run = False
+                if event.key == pygame.K_w:
+                    wkey = True
+                if event.key == pygame.K_s:
+                    skey = True
+                if event.key == pygame.K_d:
+                    dkey = True
+                if event.key == pygame.K_a:
+                    akey = True
+
+
+
+        if wkey:
+            newmap = myRobot.move(0, -1, botMap.map)
+            #make the robot actually move
+            botMap.updateMap(newmap)
+        if skey:
+            newmap = myRobot.move(0, 1, botMap.map)
+            botMap.updateMap(newmap)
+        if dkey:
+            newmap = myRobot.move(1, 0, botMap.map)
+            botMap.updateMap(newmap)
+        if akey:
+            newmap = myRobot.move(-1, 0, botMap.map)
+            botMap.updateMap(newmap)
+
+        wkey = False;skey =False;dkey= False;akey= False
+
+
 
         #Reset robot position and tiles seen by robot
-        botMap.updateRobot(bot)
-        #Update the visual map
-        temp.update()
+        #Update the visual map?
+        temp.update(botMap)
         #blah blah
         gDisp.fill(BLACK)
         temp.render(gDisp)
         pygame.display.flip()
-        gclock.tick(60)
+        gclock.tick(30)
 
 
-    print(bot)
-    print(bot.x, bot.y)
+    #print(myRobot)
+    #print(myRobot.x, myRobot.y)
     pygame.quit()
-    exit()
+    #exit()
 
 
 if __name__ == '__main__':
