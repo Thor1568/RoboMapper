@@ -53,20 +53,16 @@ class Robot():
     def move(self, dx, dy, map):
         #moves with check
         check = self.canMove(dx, dy, map)
-        print(check)
         if check:
             self.moveRaw(dx, dy)
 
         #return the edited map with the robot moved on it
         newPos = (self.x, self.y)
         #2 is explored so replace last position with 2
-        print("Before", map)
         map[self.lastY][self.lastX] = 2
         #current position set to 3
         map[newPos[1]][newPos[0]] = 3
         #returns changed map.
-        print(newPos)
-        print("after", map)
         return map
 
     def canMove(self, dx, dy, map):
@@ -343,9 +339,6 @@ def main():
         pygame.display.flip()
         gclock.tick(30)
 
-
-    #print(myRobot)
-    #print(myRobot.x, myRobot.y)
     pygame.quit()
     #exit()
 
