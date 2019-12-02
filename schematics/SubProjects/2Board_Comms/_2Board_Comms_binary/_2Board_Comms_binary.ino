@@ -13,7 +13,7 @@ const int MSGBREAK = 100;
 
 //for ease of testing, upload reciever code first. Press reset buttons at once to ensure good timing mesh.
 //SUPER IMPORTANT VARIABLE HERE:
-boolean transmitting = true;
+boolean transmitting = false;
 
 //initialize messages
 const int END_MSG = 0;
@@ -41,7 +41,7 @@ int readOver(int t, int t_break, int apin) {
   //reads signals over t with t breaks in between signals and turns to binary
   pinMode(apin, INPUT);
   int count = 0;
-  int[] message = {0,0,0,0,0,0,0,0,0};
+  int message[] = {0,0,0,0,0,0,0,0,0};
   int val = 0;
   int lastval;
   boolean isMsg = false;
@@ -75,9 +75,11 @@ int readOver(int t, int t_break, int apin) {
 
 int calculateBin(int msg[]) {
     int sum = 0;
-    for (int i =0; i<msg.length(); i++) {
+    int msgSize = sizeof(msg) / sizeof(int);
+    Serial.print(msgSize);
+    for (int i =0; i<msgSize; i++) {
         if(msg[i] == 1) {
-            sum += pow(2, i)
+            sum += pow(2, i);
         }
     }
     return sum;
@@ -111,7 +113,9 @@ void sendOver(int t, int t_break, int apin, int msgArr[]) {
     delay(t_break/4);
   }
   //break message and sned it
-  for (int i =0; i<msgArr.length(); i++) {
+  int msgArrSize = sizeof(msgArr) / sizeof(int);
+  Serial.print(msgArrSize);
+  for (int i =0; i<msgArrSize; i++) {
       if (msgArr[i] == 1) {
           digitalWrite(apin, HIGH);
           delay(t_break/4);
@@ -122,7 +126,7 @@ void sendOver(int t, int t_break, int apin, int msgArr[]) {
           delay(t_break/2);
       }
   }
-  int msgLen = STOP_MSG+STRT_MSG+msg;
-  int timeToWait = t-(msgLen*(t_break/2));
-  delay(timeToWait);
+  //int msgLen = STOP_MSG+STRT_MSG+msg;
+  //int timeToWait = t-(msgLen*(t_break/2));
+  //delay(timeToWait);
 }

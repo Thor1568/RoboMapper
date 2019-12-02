@@ -198,18 +198,19 @@ class VisualMap(pygame.Surface):
         self.objects = pygame.sprite.Group()
 
     def genBarriers(self):
+        tileSize = (self.scale, self.scale)
         rawmap = self.worldMap.map
         for y in range(len(rawmap)):
             for x in range(len(rawmap[y])):
                 if rawmap[y][x] == 1:
                     #create add
-                    oof = MapObject((self.scale, self.scale), x*self.scale+self.edge, y*self.scale+self.edge, 0)
+                    oof = MapObject(tileSize, x*self.scale+self.edge, y*self.scale+self.edge, 0)
                     self.objects.add(oof)
                 elif rawmap[y][x] == 2:
-                    oof = MapObject((self.scale, self.scale), x*self.scale+self.edge, y*self.scale+self.edge, "e")
+                    oof = MapObject(tileSize, x*self.scale+self.edge, y*self.scale+self.edge, "e")
                     self.objects.add(oof)
                 elif rawmap[y][x] == 3:
-                    self.robot = MapObject((self.scale, self.scale), x*self.scale+self.edge, y*self.scale+self.edge, "r")
+                    self.robot = MapObject(tileSize, x*self.scale+self.edge, y*self.scale+self.edge, "r")
                     self.objects.add(self.robot)
 
                 else:
@@ -238,6 +239,7 @@ class VisualMap(pygame.Surface):
         self.genBarriers()
 
 def main():
+    #example code
     import os
     #amap = UnlimMap(5, 2, 20)
     #amap.addBarrier(0, 0)
@@ -250,8 +252,8 @@ def main():
     #scale in centimeters? relate to map size in some way?
     scale = 50
     myRobot = Robot(scale)
-    maxWidth = 10
-    maxHeight = 10
+    maxWidth = 15
+    maxHeight = 11
     barrierAmt = 20
     botMap = LimMap(maxWidth, maxHeight, scale)
     randMap = True
@@ -337,7 +339,7 @@ def main():
         gDisp.fill(BLACK)
         temp.render(gDisp)
         pygame.display.flip()
-        gclock.tick(30)
+        gclock.tick(60)
 
     pygame.quit()
     #exit()
