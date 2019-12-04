@@ -36,7 +36,7 @@ int code;
 int temp;
 const int msgPin = 9;
 
-//Rewritten 
+//Rewritten
 int readOver(int t, int t_break, int apin) {
     pinMode(apin, INPUT);
     int count = 0;
@@ -91,7 +91,14 @@ int* makeBin(int number) {
     return *binArr;
 }
 
-void sendOver(int t, int t_break, int apin, int msgArr[]) {
+void pulse(int pin, int delay) {
+    digitalWrite(pin, HIGH);
+    delay(t_break/4);
+    digitalWrite(pin, LOW);
+    delay(t_break/4);
+}
+
+void sendOver(int t, int t_break, int apin, int msg) {
   pinMode(apin, OUTPUT);
   //send start message
   //turn msg to binary
@@ -104,14 +111,18 @@ void sendOver(int t, int t_break, int apin, int msgArr[]) {
     delay(t_break/4);
   }
   //break message and sned it
-  int msgArrSize = sizeof(msgArr) / sizeof(int);
-  Serial.print(msgArrSize);
+  while (msg > 0) {
+      if (msg % 2 == 0) {
+          //no pulse
+      } else {
+          //pulse because odd
+          
+      }
+  }
+
   for (int i =0; i<msgArrSize; i++) {
       if (msgArr[i] == 1) {
-          digitalWrite(apin, HIGH);
-          delay(t_break/4);
-          digitalWrite(apin, LOW);
-          delay(t_break/4);
+          pulse(apin, t_break);
       } else {
           digitalWrite(apin, LOW);
           delay(t_break/2);
