@@ -36,42 +36,33 @@ int code;
 int temp;
 const int msgPin = 9;
 
-//Abstraction that makes everything work
+//Rewritten 
 int readOver(int t, int t_break, int apin) {
-  //reads signals over t with t breaks in between signals and turns to binary
-  pinMode(apin, INPUT);
-  int count = 0;
-  int message[] = {0,0,0,0,0,0,0,0,0};
-  int val = 0;
-  int lastval;
-  boolean isMsg = false;
-  //we need to wait for an input message
-  while (!isMsg) {
-    val = digitalRead(apin);
-    if (val == 1) {
-      isMsg = true;
+    pinMode(apin, INPUT);
+    int count = 0;
+    int msg = 0;
+    int val = 0;
+    boolean isMsg = false;
+    while (!isMsg) {
+        val = digitalRead(apin);
+        if (val == 1) {
+          isMsg = true;
+        }
     }
-  }
-  //runs for every 2nd t break in t.
-  for (int tick =t_break; tick<t; tick += t_break/2) {
-    val = digitalRead(apin);
-    message[tick] = val;
-    //Serial.println(val);
-    if (val == 1) {
-      Serial.println(message[tick]);
-    }
-
-    Serial.print(" tick: ");
-    Serial.print(tick);
-    Serial.print(" val: ");
-    Serial.print(val);
-    Serial.print("\n");
-
-    delay(t_break/2);
-  }
-  Serial.println(calculateBin(message));
-  return calculateBin(message);
+    for (int tick =t_break; tick<t; tick += t_break/2) {
+      val = digitalRead(apin);
+      msg += val*pow(2, count);
+      count++;
+      Serial.print(" tick: ");
+      Serial.print(tick);
+      Serial.print(" val: ");
+      Serial.print(val);
+      Serial.print("\n");
+      delay(t_break/2);
+    return msg;
 }
+
+
 
 int calculateBin(int msg[]) {
     int sum = 0;
