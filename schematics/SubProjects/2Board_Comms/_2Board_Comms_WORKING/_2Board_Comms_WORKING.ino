@@ -11,7 +11,7 @@ const int MSGBREAK = 100;
 
 //for ease of testing, upload reciever code first. Press reset buttons at once to ensure good timing mesh.
 //SUPER IMPORTANT VARIABLE HERE:
-boolean transmitting = false;
+boolean transmitting = true;
 
 //initialize messages
 const int END_MSG = 0;

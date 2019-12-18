@@ -116,7 +116,7 @@ class LimMap():
                 self.map[x].append(0)
 
     def saveMap(self, file):
-        f = open(file, "w")
+        f = open(file, "a")
         for y in range(len(self.map)):
             f.writelines(str(self.map[y])+"\n")
 

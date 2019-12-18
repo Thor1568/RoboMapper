@@ -20,7 +20,7 @@ const int END_MSG = 0;
 const int INIT_MSG = 1;
 const int STRT_MSG = 2;
 const int STOP_MSG = 3;
-const int TEST_MSG = 4;
+const int TEST_MSG = 25;
 const int RIGHTOBJECT = 5;
 const int LEFTOBJECT = 6;
 const int BACKOBJECT = 7;
@@ -39,8 +39,8 @@ const int msgPin = 9;
 //Rewritten
 int readOver(int t, int t_break, int apin) {
     pinMode(apin, INPUT);
-    int count = 0;
-    int msg = 0;
+    int aCount = 8;
+    int msgR = 0;
     int val = 0;
     boolean isMsg = false;
     while (!isMsg) {
@@ -48,18 +48,28 @@ int readOver(int t, int t_break, int apin) {
         if (val == 1) {
           isMsg = true;
         }
+        delay(t_break);
     }
-    for (int tick =t_break; tick<t; tick += t_break/2) {
+    for (int tick =t_break; tick<t; tick += t_break) {
       val = digitalRead(apin);
-      msg += val*pow(2, count);
-      count++;
+      int temp = 1;
+      for (int i=0; i<aCount; i++) {
+          temp *=2;
+      }
+      msgR += val*temp;
+      
+      Serial.print(aCount);
+      aCount--;
       Serial.print(" tick: ");
       Serial.print(tick);
+      Serial.print(" msg: ");
+      Serial.print(msgR);
       Serial.print(" val: ");
       Serial.print(val);
       Serial.print("\n");
-      delay(t_break/2);
-    return msg;
+      delay(t_break);
+    }
+   return msgR;
 }
 
 
@@ -91,44 +101,46 @@ int* makeBin(int number) {
     return *binArr;
 }
 
-void pulse(int pin, int delay) {
+void pulse(int pin, int wait) {
     digitalWrite(pin, HIGH);
-    delay(t_break/4);
+    delay(wait/4);
     digitalWrite(pin, LOW);
-    delay(t_break/4);
+    delay(wait/4);
 }
 
 void sendOver(int t, int t_break, int apin, int msg) {
   pinMode(apin, OUTPUT);
   //send start message
   //turn msg to binary
-
-  delayMicroseconds(10);
-  for (int tick =0; tick<STRT_MSG; tick++) {
-    digitalWrite(apin, HIGH);
-    delay(t_break/4);
-    digitalWrite(apin, LOW);
-    delay(t_break/4);
-  }
+  pulse(apin, t_break);
+  delay(t_break/2);
+  Serial.print(1);
   //break message and sned it
+  int maxCount = 9;
   while (msg > 0) {
       if (msg % 2 == 0) {
           //no pulse
-      } else {
-          //pulse because odd
-          
-      }
-  }
-
-  for (int i =0; i<msgArrSize; i++) {
-      if (msgArr[i] == 1) {
-          pulse(apin, t_break);
-      } else {
           digitalWrite(apin, LOW);
           delay(t_break/2);
+          Serial.print(0);
+      } else {
+          //pulse because odd
+          pulse(apin, t_break);
+          Serial.print(1);
+      }
+      msg /= 2;
+      delay(t_break/2);
+      maxCount--;
+  }
+  //delays leftover time as zeroes.
+  if (maxCount>0) {
+      while (maxCount>0) {
+          delay(t_break);
+          maxCount--;
+          Serial.print(0);
       }
   }
-  //int msgLen = STOP_MSG+STRT_MSG+msg;
-  //int timeToWait = t-(msgLen*(t_break/2));
-  //delay(timeToWait);
+  //send final starting message
+    //send starting message
+  
 }

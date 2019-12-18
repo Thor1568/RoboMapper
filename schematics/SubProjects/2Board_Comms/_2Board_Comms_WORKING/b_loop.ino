@@ -1,6 +1,6 @@
 //Loop structure for recieving end:
 //the code recieved over period
-int MsgToSnd = TEST_MSG;
+int MsgToSnd = 2;
 boolean doSend = true;
 void recieve() {
   code = readOver(PERIOD, MSGBREAK, msgPin);
